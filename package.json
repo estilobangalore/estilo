@@ -5,13 +5,15 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "dev:api": "NODE_ENV=development node server.js",
+    "dev:api": "cross-env NODE_ENV=development node server.js",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:api\"",
     "build": "vite build",
-    "vercel-build": "vite build",
-    "start": "NODE_ENV=production node server.js",
+    "vercel-build": "node vercel-build.js",
+    "start": "cross-env NODE_ENV=production node server.js",
     "preview": "vite preview",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push:pg",
+    "db:studio": "drizzle-kit studio",
+    "docs:generate": "swagger-jsdoc -d swagger.config.js -o api-docs.json"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -49,6 +51,8 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "dotenv": "^16.5.0",
@@ -56,8 +60,12 @@
     "drizzle-zod": "^0.5.1",
     "embla-carousel-react": "^8.6.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^7.1.5",
     "express-session": "^1.18.1",
+    "express-validator": "^7.0.1",
     "framer-motion": "^11.18.2",
+    "helmet": "^7.1.0",
+    "hpp": "^0.2.3",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.453.0",
     "passport": "^0.7.0",
@@ -71,6 +79,8 @@
     "react-resizable-panels": "^3.0.2",
     "react-router-dom": "^7.6.0",
     "recharts": "^2.15.3",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
     "tailwind-merge": "^2.5.4",
     "tailwindcss": "^3.4.14",
     "tailwindcss-animate": "^1.0.7",
@@ -86,6 +96,7 @@
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
     "drizzle-kit": "^0.31.1",
     "typescript": "^5.8.3"
   }

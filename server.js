@@ -5,6 +5,19 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import apiHandler from './api/index.js';
 import { createServer as createViteServer } from 'vite';
+import dotenv from 'dotenv';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import session from 'express-session';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
+import hpp from 'hpp';
+import swaggerConfig from './swagger.config.js';
+
+// Load environment variables
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,29 +26,82 @@ const PORT = process.env.PORT || 3001;
 const PUBLIC_DIR = path.join(__dirname, 'dist/public');
 const isDev = process.env.NODE_ENV !== 'production';
 
-// Set in-memory flag for development
-global.USE_IN_MEMORY_DB = true;
+// Only use in-memory DB in development if explicitly configured
+global.USE_IN_MEMORY_DB = isDev && process.env.USE_IN_MEMORY_DB === 'true';
+
+// Rate limiting configuration
+const limiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+  message: 'Too many requests from this IP, please try again later.'
+});
 
 async function startServer() {
   const app = express();
   
-  // Enable CORS for all routes
-  app.use(cors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-    optionsSuccessStatus: 204,
+  // Enable compression
+  app.use(compression());
+
+  // Security headers
+  app.use(helmet({
+    contentSecurityPolicy: isDev ? false : undefined,
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" }
   }));
   
-  // Parse JSON request bodies
-  app.use(express.json());
+  // Prevent parameter pollution
+  app.use(hpp());
+
+  // Cookie parser
+  app.use(cookieParser());
   
+  // Session configuration
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: !isDev,
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
+  // CORS configuration
+  const corsOptions = {
+    origin: isDev 
+      ? ['http://localhost:3000', 'http://localhost:5173'] 
+      : process.env.ALLOWED_ORIGINS?.split(',') || ['https://your-production-domain.com'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    credentials: true,
+    optionsSuccessStatus: 204,
+  };
+  
+  app.use(cors(corsOptions));
+  
+  // Apply rate limiting to all routes
+  app.use(limiter);
+  
+  // Parse JSON request bodies
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  
+  // API Documentation
+  if (isDev) {
+    const specs = swaggerJsdoc(swaggerConfig);
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+  }
+
   // Add request logging
   app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    // Log request body for POST/PUT requests
     if (['POST', 'PUT'].includes(req.method) && req.body) {
-      console.log('Request body:', JSON.stringify(req.body, null, 2));
+      const sanitizedBody = { ...req.body };
+      // Remove sensitive data from logs
+      ['password', 'token', 'secret'].forEach(key => {
+        if (sanitizedBody[key]) sanitizedBody[key] = '[REDACTED]';
+      });
+      console.log('Request body:', JSON.stringify(sanitizedBody, null, 2));
     }
     next();
   });
@@ -85,11 +151,15 @@ async function startServer() {
   // Global error handler
   app.use((err, req, res, next) => {
     console.error('Server error:', err);
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: isDev ? err.message : 'Something went wrong',
-      stack: isDev ? err.stack : undefined
-    });
+    
+    // Don't leak error details in production
+    const error = {
+      message: isDev ? err.message : 'Internal Server Error',
+      ...(isDev && { stack: err.stack }),
+      status: err.status || 500
+    };
+
+    res.status(error.status).json({ error });
   });
   
   // Start the server
