@@ -9,10 +9,6 @@ const __dirname = dirname(__filename);
 console.log('Starting Vercel build process...');
 
 try {
-  // Install dependencies in the root directory
-  console.log('Installing root dependencies...');
-  execSync('npm install', { stdio: 'inherit' });
-
   // Navigate to client directory
   const clientDir = resolve(__dirname, 'client');
   console.log('Moving to client directory:', clientDir);
