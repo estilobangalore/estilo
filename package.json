@@ -8,7 +8,7 @@
     "dev:api": "cross-env NODE_ENV=development node server.js",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:api\"",
     "build": "cd client && npm install && npm run build",
-    "vercel-build": "npm install && cd client && npm install && vite build",
+    "vercel-build": "node vercel-build.mjs",
     "start": "cross-env NODE_ENV=production node server.js",
     "preview": "vite preview",
     "db:push": "drizzle-kit push:pg",
