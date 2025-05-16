@@ -1,16 +1,12 @@
 {
   "version": 2,
+  "buildCommand": "cd client && npm install && npm run build",
+  "outputDirectory": "client/dist",
+  "framework": "vite",
   "builds": [
     {
       "src": "server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "vercel-build.mjs",
-      "use": "@vercel/node",
-      "config": {
-        "buildCommand": "npm run vercel-build"
-      }
     }
   ],
   "routes": [
@@ -23,7 +19,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/client/dist/index.html"
+      "dest": "/index.html"
     }
   ]
 }
