@@ -44,3 +44,4 @@ vite.config.ts.*
 *.swo
 .temp
 .cache
+.vercel

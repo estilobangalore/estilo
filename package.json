@@ -7,13 +7,14 @@
     "dev": "vite",
     "dev:api": "cross-env NODE_ENV=development node server.js",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:api\"",
-    "build": "vite build",
+    "build": "cd client && npm install && npm run build",
     "vercel-build": "node vercel-build.js",
     "start": "cross-env NODE_ENV=production node server.js",
     "preview": "vite preview",
     "db:push": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
-    "docs:generate": "swagger-jsdoc -d swagger.config.js -o api-docs.json"
+    "docs:generate": "swagger-jsdoc -d swagger.config.js -o api-docs.json",
+    "postinstall": "cd client && npm install"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

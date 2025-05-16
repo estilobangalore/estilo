@@ -1,6 +1,63 @@
 # Estilo Web Application
 
-A modern web application built with React, Express, and PostgreSQL.
+A modern web application for interior design and decoration services, built with React, Express, and PostgreSQL.
+
+## Prerequisites
+
+- Node.js 18+
+- PostgreSQL (Neon)
+- npm or yarn
+
+## Quick Start
+
+1. Install dependencies:
+   ```bash
+   npm install
+   cd client && npm install
+   ```
+
+2. Set up your Neon database:
+   - Create a project at https://neon.tech
+   - Get your connection string
+   - Add it to your `.env` file
+
+3. Run database migrations:
+   ```bash
+   npm run db:push
+   ```
+
+4. Start the development server:
+   ```bash
+   npm run dev:all
+   ```
+
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+# Database Configuration
+DATABASE_URL=postgres://user:password@db.example.neon.tech/dbname?sslmode=require
+
+# Server Configuration
+PORT=3001
+NODE_ENV=development
+
+# Security
+SESSION_SECRET=your-session-secret-here
+CORS_ORIGIN=http://localhost:5173
+ALLOWED_ORIGINS=http://localhost:5173,https://your-production-domain.com
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+# Logging
+LOG_LEVEL=info
+
+# Client Configuration
+VITE_API_URL=http://localhost:3001/api
+```
 
 ## Security Features
 
@@ -15,38 +72,30 @@ A modern web application built with React, Express, and PostgreSQL.
 - **Compression**: Enabled for better performance
 - **Cookie Security**: HTTP-only and secure flags enabled
 
-## Setup Instructions
+## Development
 
-1. Clone the repository
-2. Copy `.env.example` to `.env` and configure your environment variables:
-   ```bash
-   cp .env.example .env
-   ```
+- `npm run dev:all` - Start both client and server in development mode
+- `npm run dev` - Start only the client
+- `npm run dev:api` - Start only the server
+- `npm run build` - Build the client
+- `npm run db:push` - Run database migrations
+- `npm run db:studio` - Open database management UI
 
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
+## Project Structure
 
-4. Set up the database:
-   ```bash
-   npm run db:push
-   ```
-
-5. Start the development server:
-   ```bash
-   npm run dev:all
-   ```
-
-## Environment Variables
-
-- `PORT`: Server port (default: 3001)
-- `NODE_ENV`: Environment (development/production)
-- `DATABASE_URL`: Neon PostgreSQL connection string
-- `SESSION_SECRET`: Secret for session management
-- `ALLOWED_ORIGINS`: Comma-separated list of allowed CORS origins
-- `RATE_LIMIT_WINDOW_MS`: Rate limiting window in milliseconds
-- `RATE_LIMIT_MAX_REQUESTS`: Maximum requests per window
+```
+├── client/             # React frontend
+│   ├── src/           # Source files
+│   ├── public/        # Static files
+│   └── dist/          # Build output
+├── server/            # Express backend
+│   ├── routes/        # API routes
+│   └── config/        # Server configuration
+├── shared/            # Shared code
+├── scripts/          
+│   └── db/           # Database scripts
+└── migrations/        # Database migrations
+```
 
 ## API Documentation
 
@@ -73,15 +122,10 @@ http://localhost:3001/api-docs
 5. Use prepared statements for database queries
 6. Validate all user inputs
 
-## Production Deployment
+## Deployment
 
-1. Set secure environment variables
-2. Enable HTTPS
-3. Configure proper CORS origins
-4. Set up monitoring and logging
-5. Configure proper database connection pools
-6. Enable production optimizations
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions on Vercel with Neon database.
 
 ## License
 
-[Your License Here] 
+This project is licensed under the MIT License. 
